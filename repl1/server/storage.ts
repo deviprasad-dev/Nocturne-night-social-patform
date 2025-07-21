@@ -403,167 +403,7 @@ class MemoryStorage implements IStorage {
     return Array.from(activeSessions);
   }
 
-  // 3AM Founder operations
-  async createAmFounder(founder: InsertAmFounder): Promise<AmFounder> {
-    try {
-      const [newFounder] = await db
-        .insert(amFounder)
-        .values(founder)
-        .returning();
-      return newFounder;
-    } catch (error) {
-      console.error("Database error, using memory storage:", error);
-      return this.memStorage.createAmFounder(founder);
-    }
-  }
 
-  async getAmFounder(): Promise<AmFounder[]> {
-    try {
-      return await db.select().from(amFounder).orderBy(desc(amFounder.createdAt));
-    } catch (error) {
-      console.error("Database error, using memory storage:", error);
-      return this.memStorage.getAmFounder();
-    }
-  }
-
-  async incrementFounderUpvotes(id: number): Promise<void> {
-    try {
-      await db
-        .update(amFounder)
-        .set({ upvotes: sql`${amFounder.upvotes} + 1` })
-        .where(eq(amFounder.id, id));
-    } catch (error) {
-      console.error("Database error, using memory storage:", error);
-      return this.memStorage.incrementFounderUpvotes(id);
-    }
-  }
-
-  async incrementFounderComments(id: number): Promise<void> {
-    try {
-      await db
-        .update(amFounder)
-        .set({ comments: sql`${amFounder.comments} + 1` })
-        .where(eq(amFounder.id, id));
-    } catch (error) {
-      console.error("Database error, using memory storage:", error);
-      return this.memStorage.incrementFounderComments(id);
-    }
-  }
-
-  // Starlit Speaker operations
-  async createStarlitSpeaker(speaker: InsertStarlitSpeaker): Promise<StarlitSpeaker> {
-    try {
-      const [newSpeaker] = await db
-        .insert(starlitSpeaker)
-        .values(speaker)
-        .returning();
-      return newSpeaker;
-    } catch (error) {
-      console.error("Database error, using memory storage:", error);
-      return this.memStorage.createStarlitSpeaker(speaker);
-    }
-  }
-
-  async getStarlitSpeaker(): Promise<StarlitSpeaker[]> {
-    try {
-      return await db.select().from(starlitSpeaker).orderBy(desc(starlitSpeaker.createdAt));
-    } catch (error) {
-      console.error("Database error, using memory storage:", error);
-      return this.memStorage.getStarlitSpeaker();
-    }
-  }
-
-  async updateSpeakerParticipants(id: number, participants: number): Promise<void> {
-    try {
-      await db
-        .update(starlitSpeaker)
-        .set({ currentParticipants: participants })
-        .where(eq(starlitSpeaker.id, id));
-    } catch (error) {
-      console.error("Database error, using memory storage:", error);
-      return this.memStorage.updateSpeakerParticipants(id, participants);
-    }
-  }
-
-  async joinStarlitSpeaker(id: number): Promise<StarlitSpeaker | null> {
-    try {
-      const [speaker] = await db
-        .update(starlitSpeaker)
-        .set({ currentParticipants: sql`${starlitSpeaker.currentParticipants} + 1` })
-        .where(eq(starlitSpeaker.id, id))
-        .returning();
-      return speaker;
-    } catch (error) {
-      console.error("Database error, using memory storage:", error);
-      return this.memStorage.joinStarlitSpeaker(id);
-    }
-  }
-
-  async leaveStarlitSpeaker(id: number): Promise<StarlitSpeaker | null> {
-    try {
-      const [speaker] = await db
-        .update(starlitSpeaker)
-        .set({ currentParticipants: sql`GREATEST(${starlitSpeaker.currentParticipants} - 1, 0)` })
-        .where(eq(starlitSpeaker.id, id))
-        .returning();
-      return speaker;
-    } catch (error) {
-      console.error("Database error, using memory storage:", error);
-      return this.memStorage.leaveStarlitSpeaker(id);
-    }
-  }
-
-  async updateStarlitSpeakerStatus(id: number, isActive: boolean): Promise<void> {
-    try {
-      await db
-        .update(starlitSpeaker)
-        .set({ isActive })
-        .where(eq(starlitSpeaker.id, id));
-    } catch (error) {
-      console.error("Database error, using memory storage:", error);
-      return this.memStorage.updateStarlitSpeakerStatus(id, isActive);
-    }
-  }
-
-  // Moon Messenger operations
-  async createMoonMessage(message: InsertMoonMessenger): Promise<MoonMessenger> {
-    try {
-      const [newMessage] = await db
-        .insert(moonMessenger)
-        .values(message)
-        .returning();
-      return newMessage;
-    } catch (error) {
-      console.error("Database error, using memory storage:", error);
-      return this.memStorage.createMoonMessage(message);
-    }
-  }
-
-  async getMoonMessages(sessionId: string): Promise<MoonMessenger[]> {
-    try {
-      return await db
-        .select()
-        .from(moonMessenger)
-        .where(eq(moonMessenger.sessionId, sessionId))
-        .orderBy(moonMessenger.timestamp);
-    } catch (error) {
-      console.error("Database error, using memory storage:", error);
-      return this.memStorage.getMoonMessages(sessionId);
-    }
-  }
-
-  async getActiveSessions(): Promise<string[]> {
-    try {
-      const sessions = await db
-        .selectDistinct({ sessionId: moonMessenger.sessionId })
-        .from(moonMessenger)
-        .where(eq(moonMessenger.isActive, true));
-      return sessions.map(s => s.sessionId);
-    } catch (error) {
-      console.error("Database error, using memory storage:", error);
-      return this.memStorage.getActiveSessions();
-    }
-  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -913,6 +753,119 @@ export class DatabaseStorage implements IStorage {
       console.error("Error incrementing cafe replies:", error);
     }
   }
+
+  // 3AM Founder operations
+  async createAmFounder(founder: InsertAmFounder): Promise<AmFounder> {
+    try {
+      const [newFounder] = await db.insert(amFounder).values(founder).returning();
+      return newFounder;
+    } catch (error) {
+      console.error("Error creating amFounder:", error);
+      return this.memStorage.createAmFounder(founder);
+    }
+  }
+
+  async getAmFounder(): Promise<AmFounder[]> {
+    try {
+      return await db.select().from(amFounder).orderBy(desc(amFounder.createdAt));
+    } catch (error) {
+      console.error("Error getting amFounder:", error);
+      return this.memStorage.getAmFounder();
+    }
+  }
+
+  async incrementFounderUpvotes(id: number): Promise<void> {
+    try {
+      await db
+        .update(amFounder)
+        .set({ upvotes: sql`${amFounder.upvotes} + 1` })
+        .where(eq(amFounder.id, id));
+    } catch (error) {
+      console.error("Error incrementing founder upvotes:", error);
+      return this.memStorage.incrementFounderUpvotes(id);
+    }
+  }
+
+  async incrementFounderComments(id: number): Promise<void> {
+    try {
+      await db
+        .update(amFounder)
+        .set({ comments: sql`${amFounder.comments} + 1` })
+        .where(eq(amFounder.id, id));
+    } catch (error) {
+      console.error("Error incrementing founder comments:", error);
+      return this.memStorage.incrementFounderComments(id);
+    }
+  }
+
+  // Starlit Speaker operations
+  async createStarlitSpeaker(speaker: InsertStarlitSpeaker): Promise<StarlitSpeaker> {
+    try {
+      const [newSpeaker] = await db.insert(starlitSpeaker).values(speaker).returning();
+      return newSpeaker;
+    } catch (error) {
+      console.error("Error creating starlitSpeaker:", error);
+      return this.memStorage.createStarlitSpeaker(speaker);
+    }
+  }
+
+  async getStarlitSpeaker(): Promise<StarlitSpeaker[]> {
+    try {
+      return await db.select().from(starlitSpeaker).orderBy(desc(starlitSpeaker.createdAt));
+    } catch (error) {
+      console.error("Error getting starlitSpeaker:", error);
+      return this.memStorage.getStarlitSpeaker();
+    }
+  }
+
+  async updateSpeakerParticipants(id: number, participants: number): Promise<void> {
+    try {
+      await db
+        .update(starlitSpeaker)
+        .set({ currentParticipants: participants })
+        .where(eq(starlitSpeaker.id, id));
+    } catch (error) {
+      console.error("Error updating speaker participants:", error);
+      return this.memStorage.updateSpeakerParticipants(id, participants);
+    }
+  }
+
+  // Moon Messenger operations
+  async createMoonMessage(message: InsertMoonMessenger): Promise<MoonMessenger> {
+    try {
+      const [newMessage] = await db.insert(moonMessenger).values(message).returning();
+      return newMessage;
+    } catch (error) {
+      console.error("Error creating moon message:", error);
+      return this.memStorage.createMoonMessage(message);
+    }
+  }
+
+  async getMoonMessages(sessionId: string): Promise<MoonMessenger[]> {
+    try {
+      return await db
+        .select()
+        .from(moonMessenger)
+        .where(eq(moonMessenger.sessionId, sessionId))
+        .orderBy(moonMessenger.timestamp);
+    } catch (error) {
+      console.error("Error getting moon messages:", error);
+      return this.memStorage.getMoonMessages(sessionId);
+    }
+  }
+
+  async getActiveSessions(): Promise<string[]> {
+    try {
+      const sessions = await db
+        .selectDistinct({ sessionId: moonMessenger.sessionId })
+        .from(moonMessenger)
+        .where(eq(moonMessenger.isActive, true));
+      return sessions.map(s => s.sessionId);
+    } catch (error) {
+      console.error("Error getting active sessions:", error);
+      return this.memStorage.getActiveSessions();
+    }
+  }
 }
 
-export const storage = new MemoryStorage();
+export const storage = new DatabaseStorage();
