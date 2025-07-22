@@ -10,6 +10,7 @@ import { Diary, Whisper, MindMaze, NightCircle, MidnightCafe } from "@shared/sch
 import { AuthButton } from "@/components/auth-button";
 import { CategoryCard } from "@/components/category-card";
 import { HeroSection } from "@/components/hero-section";
+import { EnhancedHeader } from "@/components/enhanced-header";
 import { useLocation } from "wouter";
 import { Footer } from "@/components/footer";
 import { 

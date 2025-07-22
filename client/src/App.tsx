@@ -17,6 +17,11 @@ import MindfulSpaces from "@/pages/mindful-spaces";
 import AmFounder from "@/pages/3am-founder";
 import StarlitSpeaker from "@/pages/starlit-speaker";
 import MoonMessenger from "@/pages/moon-messenger";
+import Settings from "@/pages/settings";
+import Profile from "@/pages/profile";
+import Privacy from "@/pages/privacy";
+import Notifications from "@/pages/notifications";
+import Help from "@/pages/help";
 import NotFound from "@/pages/not-found";
 
 function Landing() {
@@ -63,6 +68,11 @@ function Router() {
       <Route path="/3am-founder" component={AmFounder} />
       <Route path="/starlit-speaker" component={StarlitSpeaker} />
       <Route path="/moon-messenger" component={MoonMessenger} />
+      <Route path="/settings" component={Settings} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/notifications" component={Notifications} />
+      <Route path="/help" component={Help} />
       <Route component={NotFound} />
     </Switch>
   );
